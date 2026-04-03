@@ -1,0 +1,11 @@
+provider: shed_eu
+
+# Path to the directory containing event_data/ and periodic_data_monthly_csv/
+# Relative paths are resolved from the working directory.
+data_dir: providers/shed_eu
+
+# Restrict to a range of household IDs (inclusive). Omit to load all.
+household_range: "1-10"
+
+from: "2023-11-01T00:00:00Z"
+to: "2023-11-30T23:59:59Z"

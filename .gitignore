@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+.env
+dist/
+*.egg-info/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+thing_descriptions
+data-replay/sources.yaml
+data-replay/data/
+data-replay/fixtures.db
+*.db
+*.csv
+providers/smartlivingnext/sources.yaml

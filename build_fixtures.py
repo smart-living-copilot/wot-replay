@@ -70,7 +70,7 @@ def main():
     with open(sources_path) as f:
         config = yaml.safe_load(f)
 
-    with tempfile.TemporaryDirectory(prefix="data-replay-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="wot-replay-") as tmp:
         tmp_dir = Path(tmp)
 
         print(f"Fetching data to {tmp_dir} ...\n")

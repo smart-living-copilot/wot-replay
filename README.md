@@ -1,6 +1,6 @@
-# Data Replay
+# WoT Replay
 
-`data-replay` serves offline versions of historical IoT data endpoints.
+`wot-replay` serves offline versions of historical IoT data endpoints.
 It replays a captured fixture window on a loop and exposes WoT Thing Descriptions
 that point at the local replay server.
 
@@ -68,7 +68,7 @@ The generated `fixtures.db` is ignored in git.
 Run the service with Docker Compose from the repo root:
 
 ```bash
-docker compose up data-replay
+docker compose up wot-replay
 ```
 
 The service reads its database path and public base URL from environment

@@ -199,7 +199,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Data Replay Server", lifespan=lifespan)
+app = FastAPI(title="WoT Replay Server", lifespan=lifespan)
 
 
 @app.get("/health")

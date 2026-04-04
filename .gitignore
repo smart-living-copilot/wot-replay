@@ -9,9 +9,9 @@ dist/
 .ruff_cache/
 .pytest_cache/
 thing_descriptions
-data-replay/sources.yaml
-data-replay/data/
-data-replay/fixtures.db
+wot-replay/sources.yaml
+wot-replay/data/
+wot-replay/fixtures.db
 *.db
 *.csv
 providers/smartlivingnext/sources.yaml

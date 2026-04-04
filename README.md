@@ -13,13 +13,6 @@ its own data format, device discovery, and Thing Description generation.
 - **shed_eu** — Imports household sensor data from local CSV files. One Thing Description
   is generated per room, with properties named by sensor type (e.g. `temperature`, `co2`).
 
-## Files
-
-- `build_fixtures.py` — Downloads/imports data and builds `fixtures.db`
-- `replay_server.py` — FastAPI server that replays history and `/latest` responses
-- `td_generator.py` — Routes to provider-specific TD generators
-- `providers/` — Provider plugins (data import + TD generation)
-
 ## Configuration
 
 Each provider has a `sources.yaml` in its directory (e.g. `providers/shed_eu/sources.yaml`).
@@ -46,33 +39,50 @@ from: "2024-12-01T00:00:00Z"
 to: "2024-12-31T23:59:59Z"
 ```
 
-## Build Fixtures
+## Usage
+
+### Build fixtures
 
 Build the fixture database for a provider:
 
 ```bash
-python build_fixtures.py -p shed_eu --force-overwrite
-python build_fixtures.py -p smartlivingnext --force-overwrite
+wot-replay build smartlivingnext
+wot-replay build shed_eu --force-overwrite
 ```
 
-You can also point to a custom sources file:
+Custom sources file and output path:
 
 ```bash
-python build_fixtures.py -s my_sources.yaml -o my.db
+wot-replay build smartlivingnext -s my_sources.yaml -o my.db
 ```
 
-The generated `fixtures.db` is ignored in git.
+### Serve
 
-## Run
-
-Run the service with Docker Compose from the repo root:
+Start the replay server:
 
 ```bash
-docker compose up wot-replay
+wot-replay serve
 ```
 
-The service reads its database path and public base URL from environment
-variables configured in Compose.
+Options:
+
+```bash
+wot-replay serve --db fixtures.db --port 9000 --base-url http://localhost:9000
+```
+
+### Install
+
+From GitHub:
+
+```bash
+pip install git+https://github.com/smart-living-copilot/wot-replay.git
+```
+
+For local development:
+
+```bash
+pip install -e .
+```
 
 ## Test
 

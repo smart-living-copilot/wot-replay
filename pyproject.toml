@@ -1,0 +1,25 @@
+[project]
+name = "wot-replay"
+version = "0.1.0"
+description = "Replay server for offline WoT IoT data"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "httpx",
+    "pyyaml",
+    "requests",
+]
+
+[project.scripts]
+wot-replay = "cli:main"
+
+[tool.setuptools]
+py-modules = ["cli", "replay_server", "td_generator", "build_fixtures"]
+
+[tool.setuptools.packages.find]
+include = ["providers*"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

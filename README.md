@@ -10,8 +10,8 @@ Data is imported through provider plugins in `providers/`. Each provider handles
 its own data format, device discovery, and Thing Description generation.
 
 - **smartlivingnext** — Downloads data from the Smart Living Next API (REFIT, Dudopark).
-- **shed_eu** — Imports household sensor data from local CSV files. One Thing Description
-  is generated per room, with properties named by sensor type (e.g. `temperature`, `co2`).
+- **shed_eu** — Imports household sensor data from the SHED-EU dataset (see [Data Sources](#data-sources)).
+  One Thing Description is generated per room, with properties named by sensor type (e.g. `temperature`, `co2`).
 
 ## Configuration
 
@@ -83,6 +83,14 @@ For local development:
 ```bash
 pip install -e .
 ```
+
+## Data Sources
+
+The **shed_eu** provider uses the SHED-EU dataset, licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/):
+
+> Winterberger, S., An, D., Biallas, M., & Paice, A. (2024).
+> *Smart Home environment data across 4 European countries* [Dataset].
+> Zenodo. https://doi.org/10.5281/zenodo.14243471
 
 ## Test
 

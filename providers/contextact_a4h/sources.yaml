@@ -1,0 +1,22 @@
+provider: contextact_a4h
+
+# Where the dataset lives. If the data is missing it is downloaded (once) from
+# the Mendeley archive below and extracted here. Point this at a pre-downloaded
+# copy to skip the download.
+data_dir: providers/contextact_a4h/data
+download_url: https://data.mendeley.com/public-api/zip/fcj2hmz5kb/download/3
+download: true
+
+# Which recording period(s) to import. The inhabitant lived in the apartment
+# for ~7 days in July 2016 and ~21 days in November 2016. Importing a single
+# contiguous month keeps the replay window tight.
+months: [november]
+
+# Measurement granularity: "change" (a row only when a value changes) or
+# "update" (every recorded update, incl. sub-second duplicates). "change" is
+# recommended.
+variant: change
+
+# Optional finer time window (omit to use the whole month).
+# from: "2016-11-01T00:00:00Z"
+# to: "2016-11-21T23:59:59Z"

@@ -9,6 +9,7 @@ dist/
 .ruff_cache/
 .pytest_cache/
 thing_descriptions
+providers/contextact_a4h/data/
 wot-replay/sources.yaml
 wot-replay/data/
 wot-replay/fixtures.db

@@ -85,6 +85,35 @@ class TdGeneratorTestCase(unittest.TestCase):
             td["properties"]["motion"]["properties"]["value"]["type"], "integer"
         )
 
+    def test_smart_plug_type_with_space_uses_power_history_contract(self) -> None:
+        device = {
+            "id": "NeVdzhWbFWHjDoQIg5jf",
+            "type": "smart plug",
+            "provider": "smartlivingnext",
+            "title": "Kitchen Smart Plug 1",
+            "description": "Smart plug measuring power consumption in the kitchen",
+            "location": {
+                "building": "Dudopark",
+                "apartment": "1",
+                "room": "Kitchen",
+            },
+            "metadata": {
+                "device_id": "NeVdzhWbFWHjDoQIg5jf",
+                "manufacturer": "Unknown",
+                "model": "Smart Plug",
+            },
+            "properties": ["power"],
+        }
+
+        td = td_generator.generate_td(device, REPLAY_BASE_URL)
+
+        self.assertEqual(td["metadata"], device["metadata"])
+        self.assertEqual(td["properties"]["power"]["unit"], "W")
+        self.assertEqual(
+            td["actions"]["get_power_history"]["forms"][0]["href"],
+            f"{REPLAY_BASE_URL}/api/history/{device['id']}/power{{?from,to}}",
+        )
+
     def test_thermostat_td_includes_metadata_and_state_schema(self) -> None:
         device = {
             "id": "Kj8hViu74Ewjrp1PH26G",

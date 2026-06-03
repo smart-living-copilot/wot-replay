@@ -60,4 +60,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=wot-replay
-          cache-to: type=gha,mode=max,scope=replay
+          cache-to: type=gha,mode=max,scope=wot-replay

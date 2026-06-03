@@ -198,6 +198,10 @@ def generate_smart_meter_td(device: dict, replay_base_url: str) -> dict:
     return td
 
 
+def generate_smart_plug_td(device: dict, replay_base_url: str) -> dict:
+    return generate_smart_meter_td(device, replay_base_url)
+
+
 def generate_multisensor_td(device: dict, replay_base_url: str) -> dict:
     device_id = device["id"]
     server_base = replay_base_url.rstrip("/")
@@ -325,6 +329,8 @@ def generate_thermostat_td(device: dict, replay_base_url: str) -> dict:
 
 GENERATORS = {
     "smart_meter": generate_smart_meter_td,
+    "smart plug": generate_smart_plug_td,
+    "smart_plug": generate_smart_plug_td,
     "multisensor": generate_multisensor_td,
     "thermostat": generate_thermostat_td,
 }

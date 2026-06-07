@@ -7,35 +7,37 @@ REPLAY_BASE_URL = "https://replay.example.test"
 
 
 class TdGeneratorTestCase(unittest.TestCase):
-    def test_smart_meter_td_includes_metadata_and_history_contract(self) -> None:
-        device = {
-            "id": "wYDLYqAj21FIAoMm2zUz",
-            "type": "smart_meter",
-            "provider": "smartlivingnext",
-            "title": "Smart Meter House 5",
-            "description": "Smart electricity meter measuring power consumption for a residential household",
-            "location": {"building": "REFIT", "house": "5"},
-            "metadata": {
-                "device_id": "wYDLYqAj21FIAoMm2zUz",
-                "manufacturer": "Unknown",
-                "model": "Smart Meter",
-                "dataset": "REFIT Electrical Load Measurements",
-            },
-            "properties": ["power"],
-        }
+    def test_power_smart_meter_types_include_power_contract(self) -> None:
+        for device_type in ("smart_meter", "refit_smart_meter"):
+            with self.subTest(device_type=device_type):
+                device = {
+                    "id": "wYDLYqAj21FIAoMm2zUz",
+                    "type": device_type,
+                    "provider": "smartlivingnext",
+                    "title": "Smart Meter House 5",
+                    "description": "Smart electricity meter measuring power consumption for a residential household",
+                    "location": {"building": "REFIT", "house": "5"},
+                    "metadata": {
+                        "device_id": "wYDLYqAj21FIAoMm2zUz",
+                        "manufacturer": "Unknown",
+                        "model": "Smart Meter",
+                        "dataset": "REFIT Electrical Load Measurements",
+                    },
+                    "properties": ["power"],
+                }
 
-        td = td_generator.generate_td(device, REPLAY_BASE_URL)
+                td = td_generator.generate_td(device, REPLAY_BASE_URL)
 
-        self.assertEqual(td["metadata"], device["metadata"])
-        self.assertEqual(td["properties"]["power"]["unit"], "W")
-        self.assertEqual(
-            td["properties"]["power"]["forms"][0]["href"],
-            f"{REPLAY_BASE_URL}/api/history/{device['id']}/power/latest?includeTimestamps=true",
-        )
-        self.assertEqual(
-            td["actions"]["get_power_history"]["description"],
-            "Retrieve historical power consumption readings for a given time range",
-        )
+                self.assertEqual(td["metadata"], device["metadata"])
+                self.assertEqual(td["properties"]["power"]["unit"], "W")
+                self.assertEqual(
+                    td["properties"]["power"]["forms"][0]["href"],
+                    f"{REPLAY_BASE_URL}/api/history/{device['id']}/power/latest?includeTimestamps=true",
+                )
+                self.assertEqual(
+                    td["actions"]["get_power_history"]["description"],
+                    "Retrieve historical power consumption readings for a given time range",
+                )
 
     def test_multisensor_td_preserves_metadata_and_original_action_wording(
         self,
@@ -85,33 +87,74 @@ class TdGeneratorTestCase(unittest.TestCase):
             td["properties"]["motion"]["properties"]["value"]["type"], "integer"
         )
 
-    def test_smart_plug_type_with_space_uses_power_history_contract(self) -> None:
+    def test_smart_plug_types_use_power_history_contract(self) -> None:
+        for device_type in ("smart plug", "smart_plug"):
+            with self.subTest(device_type=device_type):
+                device = {
+                    "id": "NeVdzhWbFWHjDoQIg5jf",
+                    "type": device_type,
+                    "provider": "smartlivingnext",
+                    "title": "Kitchen Smart Plug 1",
+                    "description": "Smart plug measuring power consumption in the kitchen",
+                    "location": {
+                        "building": "Dudopark",
+                        "apartment": "1",
+                        "room": "Kitchen",
+                    },
+                    "metadata": {
+                        "device_id": "NeVdzhWbFWHjDoQIg5jf",
+                        "manufacturer": "Unknown",
+                        "model": "Smart Plug",
+                    },
+                    "properties": ["power"],
+                }
+
+                td = td_generator.generate_td(device, REPLAY_BASE_URL)
+
+                self.assertEqual(td["metadata"], device["metadata"])
+                self.assertEqual(td["properties"]["power"]["unit"], "W")
+                self.assertEqual(
+                    td["actions"]["get_power_history"]["forms"][0]["href"],
+                    f"{REPLAY_BASE_URL}/api/history/{device['id']}/power{{?from,to}}",
+                )
+
+    def test_obis_smart_meter_td_exposes_only_configured_obis_properties(self) -> None:
         device = {
-            "id": "NeVdzhWbFWHjDoQIg5jf",
-            "type": "smart plug",
+            "id": "F8QiOaIWy7tSP0WjqpIh",
+            "type": "obis_smart_meter",
             "provider": "smartlivingnext",
-            "title": "Kitchen Smart Plug 1",
-            "description": "Smart plug measuring power consumption in the kitchen",
-            "location": {
-                "building": "Dudopark",
-                "apartment": "1",
-                "room": "Kitchen",
-            },
+            "title": "Real Smart Meter",
+            "description": "Real smart electricity meter exposing OBIS measurements",
+            "location": {"building": "Smart Living Next"},
             "metadata": {
-                "device_id": "NeVdzhWbFWHjDoQIg5jf",
+                "device_id": "F8QiOaIWy7tSP0WjqpIh",
                 "manufacturer": "Unknown",
-                "model": "Smart Plug",
+                "model": "Smart Meter",
             },
-            "properties": ["power"],
+            "properties": [
+                "1-0%3A14.7.0%2A255",
+                "1-0%3A16.7.0%2A255",
+            ],
         }
 
         td = td_generator.generate_td(device, REPLAY_BASE_URL)
 
         self.assertEqual(td["metadata"], device["metadata"])
-        self.assertEqual(td["properties"]["power"]["unit"], "W")
+        self.assertNotIn("power", td["properties"])
+        self.assertNotIn("get_power_history", td["actions"])
+        self.assertIn("obis_1_0_14_7_0_255", td["properties"])
+        self.assertEqual(td["properties"]["obis_1_0_14_7_0_255"]["unit"], "Hz")
         self.assertEqual(
-            td["actions"]["get_power_history"]["forms"][0]["href"],
-            f"{REPLAY_BASE_URL}/api/history/{device['id']}/power{{?from,to}}",
+            td["properties"]["obis_1_0_14_7_0_255"]["forms"][0]["href"],
+            f"{REPLAY_BASE_URL}/api/history/{device['id']}/1-0%3A14.7.0%2A255/latest?includeTimestamps=true",
+        )
+        self.assertEqual(
+            td["actions"]["get_obis_1_0_16_7_0_255_history"]["forms"][0]["href"],
+            f"{REPLAY_BASE_URL}/api/history/{device['id']}/1-0%3A16.7.0%2A255{{?from,to}}",
+        )
+        self.assertIn(
+            "1-0:14.7.0*255",
+            td["properties"]["obis_1_0_14_7_0_255"]["properties"],
         )
 
     def test_thermostat_td_includes_metadata_and_state_schema(self) -> None:

@@ -1,5 +1,6 @@
 """Download historical IoT data from the Smart Living Next API."""
 
+from datetime import datetime, timezone
 import json
 import time
 from pathlib import Path
@@ -19,6 +20,30 @@ def download_property(
     )
     resp.raise_for_status()
     return resp.json()
+
+
+def _format_ts(ts_ms: int | float) -> str:
+    dt = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
+    return dt.isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _record_range(records: list) -> str:
+    timestamps = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        ts = record.get("ts")
+        if ts is None:
+            continue
+        try:
+            timestamps.append(float(ts))
+        except (TypeError, ValueError):
+            continue
+
+    if not timestamps:
+        return "no timestamps"
+
+    return f"min={_format_ts(min(timestamps))}, max={_format_ts(max(timestamps))}"
 
 
 def download_all(config: dict, tmp_dir: Path) -> dict[str, dict]:
@@ -53,7 +78,7 @@ def download_all(config: dict, tmp_dir: Path) -> dict[str, dict]:
                 with open(out_file, "w") as f:
                     json.dump(data, f)
                 manifest[filename] = {"device_id": device_id, "property": prop}
-                print(f"OK ({len(data)} records)")
+                print(f"OK ({len(data)} records, {_record_range(data)})")
             except Exception as e:
                 print(f"FAILED: {e}")
 

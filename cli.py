@@ -83,15 +83,20 @@ def main():
         help="Provider name (e.g. smartlivingnext, shed_eu)",
     )
     build_parser.add_argument(
-        "-s", "--sources", default=None,
+        "-s",
+        "--sources",
+        default=None,
         help="Path to sources.yaml (default: providers/<provider>/sources.yaml)",
     )
     build_parser.add_argument(
-        "-o", "--output", default="fixtures.db",
+        "-o",
+        "--output",
+        default="fixtures.db",
         help="Output SQLite database (default: fixtures.db)",
     )
     build_parser.add_argument(
-        "--force-overwrite", action="store_true",
+        "--force-overwrite",
+        action="store_true",
         help="Overwrite existing database",
     )
     build_parser.set_defaults(func=cmd_build)
@@ -99,23 +104,29 @@ def main():
     # --- serve ---
     serve_parser = sub.add_parser("serve", help="Start the replay server")
     serve_parser.add_argument(
-        "--db", default="fixtures.db",
+        "--db",
+        default="fixtures.db",
         help="Path to fixtures.db (default: fixtures.db)",
     )
     serve_parser.add_argument(
-        "--host", default="0.0.0.0",
+        "--host",
+        default="0.0.0.0",
         help="Bind address (default: 0.0.0.0)",
     )
     serve_parser.add_argument(
-        "--port", type=int, default=9000,
+        "--port",
+        type=int,
+        default=9000,
         help="Port (default: 9000)",
     )
     serve_parser.add_argument(
-        "--base-url", default="http://localhost:9000",
+        "--base-url",
+        default="http://localhost:9000",
         help="Public base URL for Thing Descriptions",
     )
     serve_parser.add_argument(
-        "--reload", action="store_true",
+        "--reload",
+        action="store_true",
         help="Enable auto-reload for development",
     )
     serve_parser.set_defaults(func=cmd_serve)

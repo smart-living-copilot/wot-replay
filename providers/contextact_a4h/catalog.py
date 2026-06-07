@@ -62,9 +62,24 @@ ROOM_EN = {
 # Sensor-type keywords that imply a numeric value when the spreadsheet leaves
 # the "Variable Type" column blank.
 _NUMERIC_TYPE_HINTS = (
-    "meter", "temperature", "co2", "carbon dioxide", "humidity", "power",
-    "energy", "tension", "voltage", "intensity", "noise", "brightness",
-    "pressure", "dimmer", "dimming", "battery", "speed", "factor",
+    "meter",
+    "temperature",
+    "co2",
+    "carbon dioxide",
+    "humidity",
+    "power",
+    "energy",
+    "tension",
+    "voltage",
+    "intensity",
+    "noise",
+    "brightness",
+    "pressure",
+    "dimmer",
+    "dimming",
+    "battery",
+    "speed",
+    "factor",
 )
 
 
@@ -129,7 +144,9 @@ def device_key(sid: str) -> str | None:
     """Map a sensor id to its physical-device key, or None to exclude it."""
     if sid in EXCLUDED_IDS:
         return None
-    m = re.match(r"(Puissance|Tension|Intensite|Energie_Partielle|Energie_Totale)_(.+)$", sid)
+    m = re.match(
+        r"(Puissance|Tension|Intensite|Energie_Partielle|Energie_Totale)_(.+)$", sid
+    )
     if m:
         return f"meter:{m.group(2)}"
     m = re.match(r"(Eau_(?:Chaude|Froide)_.+)_(Total|Instantanee)$", sid)
@@ -138,7 +155,9 @@ def device_key(sid: str) -> str | None:
     m = re.match(r"R(\d+)_", sid)
     if m:
         return f"radiator:{m.group(1)}"
-    m = re.match(r"(?:CO2|Humidite|Temperature|Leds_CO2)_(Cuisine|Salon|Chambre|SDB)$", sid)
+    m = re.match(
+        r"(?:CO2|Humidite|Temperature|Leds_CO2)_(Cuisine|Salon|Chambre|SDB)$", sid
+    )
     if m:
         return f"env:{m.group(1)}"
     m = re.match(r"(?:Presence|Luminosite)_(\w+)$", sid)
@@ -232,7 +251,9 @@ def _property_entry(var: Variable) -> dict:
     }
 
 
-def build_devices(variables: list[Variable], present_ids: set[str] | None = None) -> list[dict]:
+def build_devices(
+    variables: list[Variable], present_ids: set[str] | None = None
+) -> list[dict]:
     """Group variables into physical-device definitions.
 
     If *present_ids* is given, only variables whose id appears in the data are

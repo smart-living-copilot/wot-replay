@@ -20,12 +20,39 @@ REPLAY_BASE_URL = "https://replay.example.test"
 def _vars():
     # A small, representative slice of the real catalog.
     return [
-        Variable("Puissance_Frigo", "Power Sensor", "Fridge Power", "Double", "W", "Kitchen"),
-        Variable("Tension_Frigo", "Tension Sensor", "Fridge Voltage", "Double", "V", "Kitchen"),
-        Variable("CO2_Cuisine", "Carbon Dioxide Meter", "CO2 Kitchen", "", "ppm", "Kitchen"),
-        Variable("Temperature_Cuisine", "Temperature Sensor", "Temp Kitchen", "Double", "°C", "Kitchen"),
-        Variable("C3", "Contact Sensor", "Fridge Door Opening", "Binary", "OPEN-CLOSED", "Kitchen"),
-        Variable("current_activity", "ACTIVITY", "Self-annotated Activity", "String", "", ""),
+        Variable(
+            "Puissance_Frigo", "Power Sensor", "Fridge Power", "Double", "W", "Kitchen"
+        ),
+        Variable(
+            "Tension_Frigo",
+            "Tension Sensor",
+            "Fridge Voltage",
+            "Double",
+            "V",
+            "Kitchen",
+        ),
+        Variable(
+            "CO2_Cuisine", "Carbon Dioxide Meter", "CO2 Kitchen", "", "ppm", "Kitchen"
+        ),
+        Variable(
+            "Temperature_Cuisine",
+            "Temperature Sensor",
+            "Temp Kitchen",
+            "Double",
+            "°C",
+            "Kitchen",
+        ),
+        Variable(
+            "C3",
+            "Contact Sensor",
+            "Fridge Door Opening",
+            "Binary",
+            "OPEN-CLOSED",
+            "Kitchen",
+        ),
+        Variable(
+            "current_activity", "ACTIVITY", "Self-annotated Activity", "String", "", ""
+        ),
     ]
 
 
@@ -34,7 +61,9 @@ class CatalogTestCase(unittest.TestCase):
         self.assertEqual(device_key("Puissance_Frigo"), "meter:Frigo")
         self.assertEqual(device_key("Tension_Frigo"), "meter:Frigo")
         self.assertEqual(device_key("CO2_Cuisine"), "env:Cuisine")
-        self.assertEqual(device_key("Eau_Chaude_Douche_Total"), "water:Eau_Chaude_Douche")
+        self.assertEqual(
+            device_key("Eau_Chaude_Douche_Total"), "water:Eau_Chaude_Douche"
+        )
         self.assertEqual(device_key("C3"), "single:C3")
         self.assertIsNone(device_key("current_activity"))
 
@@ -100,7 +129,11 @@ class BulkImportTestCase(unittest.TestCase):
         return conn
 
     def test_bulk_import_parses_values(self):
-        config = {"data_dir": str(self.data_dir), "download": False, "devices": self.devices}
+        config = {
+            "data_dir": str(self.data_dir),
+            "download": False,
+            "devices": self.devices,
+        }
         conn = self._conn()
         total = self.provider.bulk_import(config, conn)
         self.assertEqual(total, 3)

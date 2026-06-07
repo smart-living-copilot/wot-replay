@@ -157,6 +157,52 @@ class TdGeneratorTestCase(unittest.TestCase):
             td["properties"]["obis_1_0_14_7_0_255"]["properties"],
         )
 
+    def test_ortsnetzstation_td_exposes_grid_measurements(self) -> None:
+        device = {
+            "id": "pM3Y69ntEE3Ugr55ihQJ",
+            "type": "ortsnetzstation",
+            "provider": "smartlivingnext",
+            "title": "Ortsnetzstation",
+            "description": "Local transformer station exposing electrical grid measurements",
+            "location": {"building": "Smart Living Next"},
+            "metadata": {
+                "device_id": "pM3Y69ntEE3Ugr55ihQJ",
+                "manufacturer": "Unknown",
+                "model": "Ortsnetzstation",
+            },
+            "properties": ["ApparentPower", "Frequency", "Voltages"],
+        }
+
+        td = td_generator.generate_td(device, REPLAY_BASE_URL)
+
+        self.assertEqual(td["metadata"], device["metadata"])
+        self.assertEqual(td["properties"]["apparent_power"]["unit"], "VA")
+        self.assertEqual(
+            td["properties"]["apparent_power"]["properties"]["ApparentPower"][
+                "properties"
+            ]["Stotal"]["unit"],
+            "VA",
+        )
+        self.assertEqual(td["properties"]["frequency"]["unit"], "Hz")
+        self.assertEqual(
+            td["properties"]["frequency"]["properties"]["Frequency"]["unit"],
+            "Hz",
+        )
+        self.assertEqual(
+            td["properties"]["voltages"]["forms"][0]["href"],
+            f"{REPLAY_BASE_URL}/api/history/{device['id']}/Voltages/latest?includeTimestamps=true",
+        )
+        self.assertEqual(
+            td["actions"]["get_voltages_history"]["forms"][0]["href"],
+            f"{REPLAY_BASE_URL}/api/history/{device['id']}/Voltages{{?from,to}}",
+        )
+        self.assertEqual(
+            td["actions"]["get_voltages_history"]["output"]["items"]["properties"][
+                "Voltages"
+            ]["properties"]["U12"]["unit"],
+            "V",
+        )
+
     def test_thermostat_td_includes_metadata_and_state_schema(self) -> None:
         device = {
             "id": "Kj8hViu74Ewjrp1PH26G",

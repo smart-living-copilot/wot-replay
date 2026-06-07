@@ -75,16 +75,22 @@ class ShedEuProvider(ProviderBase):
         # Scan periodic CSVs
         for csv_path in sorted(data_dir.glob("periodic_data_monthly_csv/*.csv")):
             self._scan_csv(
-                csv_path, rooms, kind="periodic",
-                household_range=household_range, time_range=time_range,
+                csv_path,
+                rooms,
+                kind="periodic",
+                household_range=household_range,
+                time_range=time_range,
             )
 
         # Scan event CSV
         event_csv = data_dir / "event_data" / "event_data.csv"
         if event_csv.exists():
             self._scan_csv(
-                event_csv, rooms, kind="event",
-                household_range=household_range, time_range=time_range,
+                event_csv,
+                rooms,
+                kind="event",
+                household_range=household_range,
+                time_range=time_range,
             )
 
         # Build device entries — one per room
@@ -139,9 +145,7 @@ class ShedEuProvider(ProviderBase):
             for row in reader:
                 if not _household_in_range(row[id_idx], household_range):
                     continue
-                if time_range and not _ts_in_range(
-                    _iso_to_ms(row[dt_idx]), time_range
-                ):
+                if time_range and not _ts_in_range(_iso_to_ms(row[dt_idx]), time_range):
                     continue
                 key = (row[id_idx], row[country_idx], row[room_idx])
                 rooms[key][kind].add(row[sensor_idx])
@@ -164,9 +168,7 @@ class ShedEuProvider(ProviderBase):
         # Import event data
         event_csv = data_dir / "event_data" / "event_data.csv"
         if event_csv.exists():
-            count = self._import_event_csv(
-                event_csv, conn, household_range, time_range
-            )
+            count = self._import_event_csv(event_csv, conn, household_range, time_range)
             total += count
             print(f"  event_data.csv: {count} records")
 

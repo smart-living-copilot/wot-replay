@@ -194,9 +194,7 @@ def _obis_smart_meter_property_meta(config_prop: str) -> dict:
     meta = dict(OBIS_SMART_METER_PROPERTY_METADATA.get(raw_prop, {}))
     key = meta.setdefault("key", f"obis_{_safe_name(raw_prop)}")
     meta.setdefault("value_key", raw_prop)
-    meta.setdefault(
-        "desc", f"Current smart meter reading for OBIS code {raw_prop}"
-    )
+    meta.setdefault("desc", f"Current smart meter reading for OBIS code {raw_prop}")
     meta.setdefault(
         "history_desc",
         f"Retrieve historical smart meter readings for OBIS code {raw_prop} for a given time range",
@@ -211,6 +209,165 @@ def _obis_smart_meter_property_meta(config_prop: str) -> dict:
     meta["href_prop"] = quote(raw_prop, safe="")
     meta["action"] = f"get_{key}_history"
     return meta
+
+
+def _number_schema(unit: str | None = None) -> dict:
+    schema = {"type": "number"}
+    if unit:
+        schema["unit"] = unit
+    return schema
+
+
+def _object_schema(keys: list[str], unit: str | None = None) -> dict:
+    return {
+        "type": "object",
+        "properties": {key: _number_schema(unit) for key in keys},
+    }
+
+
+ORTSNETZSTATION_PROPERTIES = {
+    "ApparentPower": {
+        "key": "apparent_power",
+        "desc": "Current apparent power readings for the local transformer station",
+        "history_desc": "Retrieve historical apparent power readings for a given time range",
+        "unit": "VA",
+        "schema": _object_schema(["S1", "S2", "S3", "SN", "Stotal"], "VA"),
+    },
+    "CosPhi": {
+        "key": "cos_phi",
+        "desc": "Current cosine phi readings for the local transformer station",
+        "history_desc": "Retrieve historical cosine phi readings for a given time range",
+        "schema": _object_schema(["CosPhi1", "CosPhi2", "CosPhi3", "CosPhiN"]),
+    },
+    "Currents": {
+        "key": "currents",
+        "desc": "Current phase and neutral current readings for the local transformer station",
+        "history_desc": "Retrieve historical current readings for a given time range",
+        "unit": "A",
+        "schema": _object_schema(["I1", "I2", "I3", "IN"], "A"),
+    },
+    "Frequency": {
+        "key": "frequency",
+        "desc": "Current grid frequency reading for the local transformer station",
+        "history_desc": "Retrieve historical frequency readings for a given time range",
+        "unit": "Hz",
+        "schema": _number_schema("Hz"),
+    },
+    "ITHD": {
+        "key": "ithd",
+        "desc": "Current current total harmonic distortion readings for the local transformer station",
+        "history_desc": "Retrieve historical current total harmonic distortion readings for a given time range",
+        "unit": "%",
+        "schema": _object_schema(["I1thd", "I2thd", "I3thd", "INthd"], "%"),
+    },
+    "Power": {
+        "key": "power",
+        "desc": "Current active power readings for the local transformer station",
+        "history_desc": "Retrieve historical active power readings for a given time range",
+        "unit": "W",
+        "schema": _object_schema(["P1", "P2", "P3", "PN", "Ptotal"], "W"),
+    },
+    "PowerFactor": {
+        "key": "power_factor",
+        "desc": "Current power factor readings for the local transformer station",
+        "history_desc": "Retrieve historical power factor readings for a given time range",
+        "schema": _object_schema(["PF1", "PF2", "PF3", "PFN"]),
+    },
+    "ReactivePower": {
+        "key": "reactive_power",
+        "desc": "Current reactive power readings for the local transformer station",
+        "history_desc": "Retrieve historical reactive power readings for a given time range",
+        "unit": "var",
+        "schema": _object_schema(["Q1", "Q2", "Q3", "QN", "Qtotal"], "var"),
+    },
+    "UTHD": {
+        "key": "uthd",
+        "desc": "Current voltage total harmonic distortion readings for the local transformer station",
+        "history_desc": "Retrieve historical voltage total harmonic distortion readings for a given time range",
+        "unit": "%",
+        "schema": _object_schema(["U1thd", "U2thd", "U3thd"], "%"),
+    },
+    "Voltages": {
+        "key": "voltages",
+        "desc": "Current phase-to-phase, phase-to-neutral, and neutral voltage readings for the local transformer station",
+        "history_desc": "Retrieve historical voltage readings for a given time range",
+        "unit": "V",
+        "schema": _object_schema(["UN", "U12", "U1N", "U23", "U2N", "U31", "U3N"], "V"),
+    },
+}
+
+
+def generate_ortsnetzstation_td(device: dict, replay_base_url: str) -> dict:
+    device_id = device["id"]
+    server_base = replay_base_url.rstrip("/")
+    td = base_td(device)
+
+    td_properties = {}
+    td_actions = {}
+
+    for api_prop in device["properties"]:
+        meta = ORTSNETZSTATION_PROPERTIES[api_prop]
+        key = meta["key"]
+        href_prop = quote(api_prop, safe="")
+
+        td_property = {
+            "description": meta["desc"],
+            "type": "object",
+            "readOnly": True,
+            "forms": [
+                {
+                    "op": ["readproperty"],
+                    "href": f"{server_base}/api/history/{device_id}/{href_prop}/latest?includeTimestamps=true",
+                    "contentType": "application/json",
+                }
+            ],
+            "properties": {
+                "ts": {
+                    "type": "integer",
+                    "description": "Unix timestamp in milliseconds",
+                },
+                api_prop: meta["schema"],
+            },
+        }
+        if meta.get("unit"):
+            td_property["unit"] = meta["unit"]
+        td_properties[key] = td_property
+
+        action_name = f"get_{key}_history"
+        td_action = {
+            "description": meta["history_desc"],
+            "safe": True,
+            "idempotent": True,
+            "forms": [
+                {
+                    "op": "invokeaction",
+                    "href": f"{server_base}/api/history/{device_id}/{href_prop}{{?from,to}}",
+                    "contentType": "application/json",
+                    "htv:methodName": "GET",
+                }
+            ],
+            "output": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "ts": {
+                            "type": "integer",
+                            "description": "Unix timestamp in milliseconds",
+                        },
+                        api_prop: meta["schema"],
+                    },
+                },
+            },
+            "uriVariables": URI_VARIABLES,
+        }
+        if meta.get("unit"):
+            td_action["unit"] = meta["unit"]
+        td_actions[action_name] = td_action
+
+    td["properties"] = td_properties
+    td["actions"] = td_actions
+    return td
 
 
 def generate_smart_meter_td(device: dict, replay_base_url: str) -> dict:
@@ -484,6 +641,8 @@ GENERATORS = {
     "smart plug": generate_smart_plug_td,
     "smart_plug": generate_smart_plug_td,
     "obis_smart_meter": generate_obis_smart_meter_td,
+    "ortsnetzstation": generate_ortsnetzstation_td,
+    "local_grid_station": generate_ortsnetzstation_td,
     "multisensor": generate_multisensor_td,
     "thermostat": generate_thermostat_td,
 }
